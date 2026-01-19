@@ -23,7 +23,8 @@
   ],
   "exports": {
     ".": "./dist/index.mjs",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./types": "./types.d.ts"
   },
   "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",
