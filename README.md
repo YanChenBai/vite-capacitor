@@ -1,6 +1,6 @@
 # vite-capacitor
 
-**vite-capacitor** 是一个零配置的 Capacitor 增强工具，它能自动将你的 Vite 运行环境（开发服务器 IP 或构建目录）同步到原生工程中。
+**vite-capacitor** 是一个 Capacitor 增强工具，它能自动将你的 Vite 运行环境（开发服务器 IP 或构建目录）同步到原生工程中。
 
 ## ✨ 为什么使用它？
 
