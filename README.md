@@ -8,7 +8,6 @@ Capacitor 开发需要手动修改 `capacitor.config.ts` 中的 `server.url` 来
 
 * **开发模式**：自动获取本机局域网 IP，配置 HMR 地址。
 * **生产模式**：自动指向构建后的 `dist` 目录。
-* **零干扰**：无需在 Vite 中注册插件，通过命令行直接驱动。
 
 ---
 
