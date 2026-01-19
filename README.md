@@ -1,55 +1,29 @@
 # vite-capacitor
 
-[![npm version](https://img.shields.io/npm/v/vite-capacitor.svg)](https://www.npmjs.com/package/vite-capacitor)
-[![license](https://img.shields.io/github/license/author/library.svg)](./LICENSE)
+**vite-capacitor** 是一个零配置的 Capacitor 增强工具，它能自动将你的 Vite 运行环境（开发服务器 IP 或构建目录）同步到原生工程中。
 
-🚀 **自动同步 Vite 开发服务器环境到 Capacitor 配置。**
+## ✨ 为什么使用它？
 
-在进行 Capacitor 真机调试时，手动查找本机局域网 IP 并修改 `server.url` 非常繁琐。本插件通过自动化这一过程，实现了“启动即调试”的移动端开发体验。
+Capacitor 开发需要手动修改 `capacitor.config.ts` 中的 `server.url` 来进行真机调试。**vite-capacitor** 将这一过程自动化：
+
+* **开发模式**：自动获取本机局域网 IP，配置 HMR 地址。
+* **生产模式**：自动指向构建后的 `dist` 目录。
+* **零干扰**：无需在 Vite 中注册插件，通过命令行直接驱动。
 
 ---
 
-## 📦 安装
+## 🚀 快速上手
+
+### 1. 安装
 
 ```bash
-# 使用 pnpm
-pnpm add vite-capacitor -D
-
-# 使用 npm
 npm install vite-capacitor -D
+
 ```
 
----
+### 2. 配置 Capacitor
 
-## 🛠️ 快速配置
-
-### 1. 配置 Vite 插件
-
-在 `vite.config.ts` 中引入并使用插件。
-
-```typescript
-// vite.config.ts
-import { defineConfig } from 'vite'
-import { viteCapacitor } from 'vite-capacitor'
-
-export default defineConfig({
-  plugins: [
-    viteCapacitor()
-  ],
-  // 插件扩展了类型，你可以在这里定义 Capacitor 基础属性
-  capacitor: {
-    appId: 'com.example.app',
-    appName: 'MyCapApp',
-  },
-  server: {
-    host: true, // 必须开启 host
-  }
-})
-```
-
-### 2. Capacitor 配置
-
-修改项目根目录的 `capacitor.config.ts`，调用 `loadConfig` 来动态加载生成的配置。
+在 `capacitor.config.ts` 中引入 `loadConfig`。它会根据执行环境自动注入配置。
 
 ```typescript
 // capacitor.config.ts
@@ -58,42 +32,40 @@ import { loadConfig } from 'vite-capacitor'
 export default loadConfig()
 ```
 
-### 3. 更新 .gitignore
+### 3. 使用 `npx vcap sync` 替代 `npx cap sync`
 
-插件生成的临时配置文件建议不要提交到仓库。
+不再直接使用原生命令，改用 `vcap`：
 
-```ignore
-# .gitignore
-.capacitor/
+```bash
+# 真机热更新调试 (Development)
+# 自动探测 IP -> 生成配置 -> 执行 cap sync
+npx vcap sync android
+
+# 准备发布包 (Production)
+# 自动设置 webDir: dist -> 执行 cap sync
+npx vcap sync android --build
 
 ```
 
-## 📖 使用案例 (Usage Example)
+---
 
-### 场景 A：真机实时调试 (Development)
+## 🛠️ CLI 命令详解
 
-1. **执行启动**: 运行 `npm run dev`。
-* 插件检测到你的电脑 IP 是 `192.168.1.50`，Vite 端口是 `5173`。
-* 插件自动在 `.capacitor/config.dev.json` 中生成包含 `http://192.168.1.50:5173` 的配置。
+`vcap sync [platform] [options]`
 
-2. **运行 App**: 运行 `npx cap run ios` 或 `npx cap run android`。
-* **效果**: 手机 App 启动后会自动连接到你电脑上的 Vite 服务。当你修改代码并保存时，手机屏幕会**立即同步更新 (HMR)**。
+| 选项 | 描述 | 默认值 |
+| --- | --- | --- |
+| `platform` | 目标平台: `android` 或 `ios` | - |
+| `--build` | **重要**：指定为生产模式。不加则默认为开发模式。 | `false` |
+| `--deployment` | (iOS) `pod install` 使用 `--deployment`。 | `false` |
+| `--inline` | (Android) 将 Source Maps 内联到 Webview 中。 | `false` |
 
-### 场景 B：构建发布 (Production)
+## 📄 建议配置
 
-1. **执行构建**: 运行 `npm run build`。
-* 插件识别到 Vite 的构建输出目录为 `dist`。
-* 插件自动在 `.capacitor/config.prod.json` 中将 `webDir` 设置为 `dist`。
+将 `.capacitor` 目录加入忽略列表，因为它包含的是本地环境相关的动态配置：
 
-2. **同步资源**: 运行 `npx cap copy`。
-* **效果**: Capacitor 会自动将编译好的 `dist` 静态资源拷贝到原生工程中，确保 App 在离线状态下也能正常运行。
+```ignore
+// .gitignore
+.capacitor/
 
-## 📂 项目结构
-
-```text
-.
-├── .capacitor/             # 插件生成的临时配置目录
-│   ├── config.dev.json     # 开发环境配置 (含动态 IP URL)
-│   └── config.prod.json    # 生产环境配置 (含 webDir)
-├── vite.config.ts          # 配置 Capacitor 基础属性
-└── capacitor.config.ts     # 动态消费生成的配置
+```

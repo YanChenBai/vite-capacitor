@@ -29,6 +29,9 @@
   "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
+  "bin": {
+    "vcap": "./dist/vcap.mjs"
+  },
   "files": [
     "README.md",
     "dist",
@@ -44,10 +47,14 @@
     "lint": "eslint .",
     "lint:fix": "nr lint --fix"
   },
+  "dependencies": {
+    "yargs": "^18.0.0"
+  },
   "devDependencies": {
     "@antfu/eslint-config": "^7.0.1",
     "@capacitor/cli": "^8.0.1",
     "@types/node": "^25.0.3",
+    "@types/yargs": "^17.0.35",
     "bumpp": "^10.3.2",
     "eslint": "^9.39.2",
     "esno": "^4.8.0",
