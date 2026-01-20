@@ -67,9 +67,9 @@ async function writeProdConfig() {
 
 export async function updateConfig(build = false) {
   if (build)
-    await writeDevConfig()
-  else
     await writeProdConfig()
+  else
+    await writeDevConfig()
 }
 
 export function loadConfig() {
