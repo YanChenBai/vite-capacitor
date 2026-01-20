@@ -1,7 +1,7 @@
 {
   "name": "vite-capacitor",
   "type": "module",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Automate Capacitor configuration (IP & webDir) sync with Vite.",
   "author": "BaiYanchen <bycrxemail@gmail.com>",
   "license": "MIT",
