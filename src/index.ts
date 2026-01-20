@@ -5,8 +5,8 @@ import process from 'node:process'
 import { loadConfigFromFile } from 'vite'
 
 const CAP_STORAGE_DIR = path.resolve(process.cwd(), '.capacitor')
-const CAP_DEV_JSON = path.join(CAP_STORAGE_DIR, 'config.dev.json')
-const CAP_PROD_JSON = path.join(CAP_STORAGE_DIR, 'config.prod.json')
+const CAP_DEV_JSON_FILE_PATH = path.join(CAP_STORAGE_DIR, 'config.dev.json')
+const CAP_PROD_JSON_FILE_PATH = path.join(CAP_STORAGE_DIR, 'config.prod.json')
 
 function isDev() {
   return process.env.NODE_ENV?.trim() === 'development'
@@ -32,43 +32,48 @@ function getNetworkIP() {
   return allIPv4.find(i => !i.address.startsWith('198.18.'))?.address || 'localhost'
 }
 
-async function updateDevConfig() {
-  const result = await loadConfigFromFile({ mode: 'development', command: 'serve' })
-  const port = result?.config.server?.port ?? 5173
-  const baseCapConfig = result?.config.capacitor ?? {}
+function writeConfigFile(filePath: string, config: object) {
+  const dir = path.dirname(filePath)
 
-  const devConfig = {
-    ...baseCapConfig,
-    server: {
-      url: `http://${getNetworkIP()}:${port}`,
-      ...baseCapConfig?.server,
-    },
-  }
+  if (!fs.existsSync(dir))
+    fs.mkdirSync(dir, { recursive: true })
 
-  fs.writeFileSync(CAP_DEV_JSON, JSON.stringify(devConfig, null, 2))
+  fs.writeFileSync(filePath, JSON.stringify(config, null, 2))
 }
 
-async function updateProdConfig() {
+async function writeDevConfig() {
+  const result = await loadConfigFromFile({ mode: 'development', command: 'serve' })
+  const port = result?.config.server?.port ?? 5173
+  const capConfig = result?.config.capacitor ?? {}
+
+  writeConfigFile(CAP_DEV_JSON_FILE_PATH, {
+    ...capConfig,
+    server: {
+      url: `http://${getNetworkIP()}:${port}`,
+      ...capConfig?.server,
+    },
+  })
+}
+
+async function writeProdConfig() {
   const result = await loadConfigFromFile({ mode: 'production', command: 'build' })
   const viteConfig = result?.config
 
-  const prodConfig = {
+  writeConfigFile(CAP_PROD_JSON_FILE_PATH, {
     webDir: viteConfig?.build?.outDir ?? 'dist',
     ...viteConfig?.capacitor,
-  }
-
-  fs.writeFileSync(CAP_PROD_JSON, JSON.stringify(prodConfig, null, 2))
+  })
 }
 
 export async function updateConfig(build = false) {
   if (build)
-    await updateProdConfig()
+    await writeDevConfig()
   else
-    await updateDevConfig()
+    await writeProdConfig()
 }
 
 export function loadConfig() {
-  const targetFile = isDev() ? CAP_DEV_JSON : CAP_PROD_JSON
+  const targetFile = isDev() ? CAP_DEV_JSON_FILE_PATH : CAP_PROD_JSON_FILE_PATH
 
   if (!fs.existsSync(targetFile)) {
     console.warn(`[vite-capacitor] Config file not found: ${targetFile}. Using fallback.`)
